@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Garuda Mining - Official Play-to-Earn Game on InChain Blockchain">
+    <meta name="theme-color" content="#000">
+    <title>GARUDA MINING - Official Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(180deg, #000000 0%, #001a00 50%, #000033 100%);
+            color: #00FF88;
+            text-align: center;
+            padding: 10px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #00FF88, #00AA55);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 28px;
+            font-weight: bold;
+            margin: 15px 0;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+        }
+
+        .badge {
+            display: inline-block;
+            background: #00FF88;
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin: 5px 0;
+        }
+
+        #status {
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .status-connecting {
+            background: rgba(255, 136, 0, 0.2);
+            color: #FF8800;
+            border: 2px solid #FF8800;
+        }
+
+        .status-connected {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00FF00;
+            border: 2px solid #00FF00;
+        }
+
+        .status-error {
+            background: rgba(255, 68, 68, 0.2);
+            color: #FF4444;
+            border: 2px solid #FF4444;
+        }
+
+        .card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid #00FF88;
+            border-radius: 20px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .stat-box {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00FF88;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #00FF88;
+        }
+
+        #tapBtn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #00FF88, #00AA55);
+            color: #000;
+            font-size: 28px;
+            font-weight: bold;
+            border: 4px solid #fff;
+            box-shadow: 0 0 40px #00FF88, inset 0 0 20px rgba(0, 255, 136, 0.3);
+            margin: 20px auto;
+            display: block;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #tapBtn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 60px #00FF88, inset 0 0 30px rgba(0, 255, 136, 0.5);
+        }
+
+        #tapBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .btn {
+            background: #00FF88;
+            color: #000;
+            border: none;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover:not(:disabled) {
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-full {
+            grid-column: 1 / -1;
+        }
+
+        .btn-auto {
+            background: #FF8800;
+            color: #fff;
+        }
+
+        .btn-kirim {
+            background: #00CCFF;
+            color: #000;
+        }
+
+        .btn-upgrade {
+            background: #FF00FF;
+            color: #fff;
+        }
+
+        .btn-connect {
+            background: #00FF00;
+            color: #000;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 2px solid #00FF88;
+            background: rgba(30, 30, 30, 0.8);
+            color: #00FF88;
+            text-align: center;
+            font-size: 15px;
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+            border-color: #00FFFF;
+        }
+
+        input::placeholder {
+            color: #00FF88;
+            opacity: 0.5;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .success {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00FF00;
+            border: 2px solid #00FF00;
+        }
+
+        .error {
+            background: rgba(255, 68, 68, 0.2);
+            color: #FF4444;
+            border: 2px solid #FF4444;
+        }
+
+        .warning {
+            background: rgba(255, 200, 0, 0.2);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+
+        .info {
+            background: rgba(0, 200, 255, 0.2);
+            color: #00CCFF;
+            border: 2px solid #00CCFF;
+        }
+
+        .tap-counter {
+            font-size: 18px;
+            color: #00FF88;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .upgrade-list {
+            text-align: left;
+            margin: 15px 0;
+        }
+
+        .upgrade-item {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 3px solid #00FF88;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-item.locked {
+            opacity: 0.5;
+        }
+
+        .upgrade-price {
+            background: rgba(255, 136, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            color: #FF8800;
+        }
+
+        .tx-link {
+            color: #00CCFF;
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 12px;
+        }
+
+        .tx-link:hover {
+            text-decoration: underline;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00FF88;
+            margin: 20px 0 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #00FF88;
+            padding-bottom: 10px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #00FF88;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #666;
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .legal-notice {
+            background: rgba(255, 200, 0, 0.1);
+            border: 1px solid #FFD700;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 12px;
+            color: #FFD700;
+            margin: 10px 0;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 480px) {
+            header {
+                font-size: 24px;
+            }
+
+            #tapBtn {
+                width: 160px;
+                height: 160px;
+                font-size: 24px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>👑 GARUDA MINING 👑</header>
+        <div class="badge">OFFICIAL GAME v1.0</div>
+
+        <div id="status" class="status-connecting">
+            ⏳ Menghubungkan ke Wallet...
+        </div>
+
+        <div class="card">
+            <div class="section-title">💰 Balance & Stats</div>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Total Koin</div>
+                    <div class="stat-value" id="balance">0</div>
+                    <div style="font-size: 12px; color: #00FF88;">GRD</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Per Tap</div>
+                    <div class="stat-value" id="perTap">2</div>
+                    <div style="font-size: 12px; color: #00FF88;">GRD</div>
+                </div>
+            </div>
+            <div class="tap-counter">Total Tap: <span id="tapCount">0</span></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">⛏️ Main Game</div>
+            <button id="tapBtn" disabled>TAP<br><span id="tapDisplay">+2</span></button>
+            <div class="button-group">
+                <button class="btn btn-auto" id="autoBtn" disabled>🤖 AUTO TAP</button>
+                <button class="btn btn-upgrade" id="buyAuto" disabled>⚡ UPGRADE<br>(Cost: 800)</button>
+            </div>
+            <div id="gameMessage"></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📈 Upgrades Available</div>
+            <div class="upgrade-list">
+                <div class="upgrade-item">
+                    <div>
+                        <div style="text-align: left; font-weight: bold;">🚀 Speed Boost</div>
+                        <div style="font-size: 12px; color: #888;">+1 GRD per tap</div>
+                    </div>
+                    <div class="upgrade-price">800 GRD</div>
+                </div>
+                <div class="upgrade-item">
+                    <div>
+                        <div style="text-align: left; font-weight: bold;">⚙️ Auto Tap</div>
+                        <div style="font-size: 12px; color: #888;">Tap otomatis setiap 200ms</div>
+                    </div>
+                    <div class="upgrade-price">Toggle</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📤 Kirim Token ke Wallet</div>
+            <input type="text" id="alamatTujuan" placeholder="Alamat Tujuan: 0x..." disabled>
+            <input type="number" id="jumlahKirim" placeholder="Jumlah (Kosong = Semua)" min="0" disabled>
+            <button class="btn btn-kirim btn-full" id="kirimBtn" disabled>📦 KIRIM TOKEN KE WALLET</button>
+            <div id="kirimStatus"></div>
+            <div class="legal-notice">
+                ⚠️ Pastikan alamat tujuan benar. Transaksi tidak dapat dibatalkan!
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">🔗 Koneksi Wallet</div>
+            <div style="font-size: 14px; margin: 10px 0; color: #00FF88;">
+                <div id="walletAddress">-</div>
+                <div style="font-size: 12px; color: #888; margin-top: 5px;">InChain Mainnet</div>
+            </div>
+            <button class="btn btn-connect btn-full" id="connectBtn">🔌 HUBUNGKAN METAMASK</button>
+        </div>
+
+        <div class="footer">
+            <div style="margin-bottom: 15px;">
+                <strong>GARUDA MINING OFFICIAL</strong><br>
+                Play-to-Earn Game on InChain Blockchain<br>
+                Made with ❤️
+            </div>
+            <div class="legal-notice">
+                💼 LEGAL COMPLIANCE:<br>
+                • Permainan ini 100% transparan berbasis blockchain<br>
+                • Semua transaksi tercatat di smart contract<br>
+                • Tidak ada hidden fee atau scam mechanism<br>
+                • Anda memiliki kontrol penuh atas token Anda<br>
+                • Gunakan Metamask untuk keamanan maksimal
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CONFIG ====================
+        const CONFIG = {
+            CONTRACT: "0x4847F2E8dD63ba03b9C4f935BdEd95bEc1bcaCb4",
+            CHAIN_ID: "0x1F4",
+            CHAIN_NAME: "InChain Mainnet",
+            RPC_URL: "https://mainnet.inchain.ai/",
+            NATIVE_CURRENCY: {
+                name: "InChain",
+                symbol: "IN",
+                decimals: 18
+            }
+        };
+
+        const ABI = [
+            {
+                inputs: [
+                    { name: "to", type: "address" },
+                    { name: "amount", type: "uint256" }
+                ],
+                name: "transfer",
+                outputs: [{ name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function"
+            },
+            {
+                inputs: [{ name: "owner", type: "address" }],
+                name: "balanceOf",
+                outputs: [{ name: "", type: "uint256" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [],
+                name: "decimals",
+                outputs: [{ name: "", type: "uint8" }],
+                stateMutability: "view",
+                type: "function"
+            },
+            {
+                inputs: [],
+                name: "totalSupply",
+                outputs: [{ name: "", type: "uint256" }],
+                stateMutability: "view",
+                type: "function"
+            }
+        ];
+
+        // ==================== STATE ====================
+        let web3 = null;
+        let contract = null;
+        let myAddress = null;
+        let walletConnected = false;
+
+        let balance = 0;
+        let tapCount = 0;
+        let speed = 2;
+        let auto = false;
+        let autoInterval = null;
+        let decimals = 18;
+        let lastTapTime = 0;
+        const TAP_COOLDOWN = 100; // ms
+
+        // ==================== INIT ====================
+        window.onload = async () => {
+            loadLocalData();
+            updateUI();
+            checkWalletAvailability();
+            document.getElementById("connectBtn").addEventListener("click", connectWallet);
+            document.getElementById("tapBtn").addEventListener("click", tap);
+            document.getElementById("autoBtn").addEventListener("click", toggleAuto);
+            document.getElementById("buyAuto").addEventListener("click", buyUpgrade);
+            document.getElementById("kirimBtn").addEventListener("click", kirimToken);
+        };
+
+        function loadLocalData() {
+            tapCount = parseInt(localStorage.getItem("g_tap")) || 0;
+            speed = parseInt(localStorage.getItem("g_speed")) || 2;
+            balance = parseFloat(localStorage.getItem("g_balance")) || 0;
+        }
+
+        function saveLocalData() {
+            localStorage.setItem("g_tap", tapCount);
+            localStorage.setItem("g_speed", speed);
+            localStorage.setItem("g_balance", balance.toFixed(8));
+        }
+
+        function checkWalletAvailability() {
+            if (typeof window.ethereum !== "undefined") {
+                setStatus("Wallet terdeteksi. Klik 'HUBUNGKAN METAMASK'", "info");
+                document.getElementById("connectBtn").disabled = false;
+                // Auto connect if already connected
+                if (window.ethereum.selectedAddress) {
+                    connectWallet();
+                }
+            } else {
+                setStatus("❌ Metamask tidak terdeteksi. Silakan install Metamask", "error");
+                document.getElementById("connectBtn").innerText = "⬇️ INSTALL METAMASK";
+                document.getElementById("connectBtn").onclick = () => {
+                    window.open("https://metamask.io/download/", "_blank");
+                };
+            }
+        }
+
+        async function connectWallet() {
+            try {
+                setStatus("⏳ Menghubungkan...", "info");
+
+                web3 = new Web3(window.ethereum);
+
+                // Request network switch
+                try {
+                    await window.ethereum.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: CONFIG.CHAIN_ID }]
+                    });
+                } catch (err) {
+                    if (err.code === 4902) {
+                        // Network not added
+                        await window.ethereum.request({
+                            method: "wallet_addEthereumChain",
+                            params: [
+                                {
+                                    chainId: CONFIG.CHAIN_ID,
+                                    chainName: CONFIG.CHAIN_NAME,
+                                    rpcUrls: [CONFIG.RPC_URL],
+                                    nativeCurrency: CONFIG.NATIVE_CURRENCY
+                                }
+                            ]
+                        });
+                    } else {
+                        throw err;
+                    }
+                }
+
+                // Request account access
+                const accounts = await window.ethereum.request({
+                    method: "eth_requestAccounts"
+                });
+
+                myAddress = accounts[0];
+                walletConnected = true;
+
+                // Initialize contract
+                contract = new web3.eth.Contract(ABI, CONFIG.CONTRACT);
+
+                // Get decimals
+                try {
+                    decimals = parseInt(await contract.methods.decimals().call());
+                } catch {
+                    decimals = 18;
+                }
+
+                // Enable UI elements
+                document.getElementById("tapBtn").disabled = false;
+                document.getElementById("autoBtn").disabled = false;
+                document.getElementById("buyAuto").disabled = false;
+                document.getElementById("alamatTujuan").disabled = false;
+                document.getElementById("jumlahKirim").disabled = false;
+                document.getElementById("kirimBtn").disabled = false;
+
+                // Update wallet info
+                document.getElementById("walletAddress").innerText =
+                    myAddress.substring(0, 6) + "..." + myAddress.substring(myAddress.length - 4);
+
+                // Load blockchain balance
+                await loadBlockchainBalance();
+
+                setStatus(
+                    "✅ Terhubung: " + myAddress.substring(0, 10) + "...",
+                    "success"
+                );
+
+                // Listen for account changes
+                window.ethereum.on("accountsChanged", (accounts) => {
+                    if (accounts.length === 0) {
+                        disconnectWallet();
+                    } else if (accounts[0] !== myAddress) {
+                        myAddress = accounts[0];
+                        document.getElementById("walletAddress").innerText =
+                            myAddress.substring(0, 6) + "..." + myAddress.substring(myAddress.length - 4);
+                        loadBlockchainBalance();
+                    }
+                });
+            } catch (err) {
+                console.error(err);
+                setStatus("❌ Gagal terhubung: " + err.message, "error");
+            }
+        }
+
+        function disconnectWallet() {
+            walletConnected = false;
+            myAddress = null;
+            web3 = null;
+            contract = null;
+
+            document.getElementById("walletAddress").innerText = "-";
+            document.getElementById("tapBtn").disabled = true;
+            document.getElementById("autoBtn").disabled = true;
+            document.getElementById("buyAuto").disabled = true;
+            document.getElementById("alamatTujuan").disabled = true;
+            document.getElementById("jumlahKirim").disabled = true;
+            document.getElementById("kirimBtn").disabled = true;
+
+            setStatus("Wallet terputus. Silakan hubungkan kembali.", "warning");
+        }
+
+        async function loadBlockchainBalance() {
+            if (!walletConnected || !contract || !myAddress) return;
+
+            try {
+                const bal = await contract.methods.balanceOf(myAddress).call();
+                balance = parseFloat(web3.utils.fromWei(bal, "ether"));
+                saveLocalData();
+                updateUI();
+            } catch (err) {
+                console.error("Error loading balance:", err);
+                setStatus("⚠️ Gagal memuat balance dari blockchain", "warning");
+            }
+        }
+
+        function updateUI() {
+            document.getElementById("balance").innerText = balance.toFixed(2);
+            document.getElementById("tapCount").innerText = tapCount;
+            document.getElementById("perTap").innerText = speed;
+            document.getElementById("tapDisplay").innerText = "+" + speed;
+        }
+
+        function tap() {
+            if (!walletConnected) {
+                setStatus("❌ Silakan hubungkan wallet terlebih dahulu", "error");
+                return;
+            }
+
+            const now = Date.now();
+            if (now - lastTapTime < TAP_COOLDOWN) return;
+            lastTapTime = now;
+
+            balance += speed;
+            tapCount++;
+            updateUI();
+            saveLocalData();
+
+            // Visual feedback
+            document.getElementById("tapBtn").style.boxShadow =
+                "0 0 60px #fff, inset 0 0 30px rgba(0, 255, 136, 0.5)";
+            setTimeout(() => {
+                document.getElementById("tapBtn").style.boxShadow =
+                    "0 0 40px #00FF88, inset 0 0 20px rgba(0, 255, 136, 0.3)";
+            }, 100);
+        }
+
+        function toggleAuto() {
+            auto = !auto;
+
+            if (auto) {
+                autoInterval = setInterval(() => {
+                    if (walletConnected) {
+                        tap();
+                    }
+                }, 200);
+
+                document.getElementById("autoBtn").innerText = "⏹️ STOP AUTO";
+                document.getElementById("autoBtn").style.background = "#FF0000";
+                setStatus("✅ Auto Tap AKTIF", "success");
+            } else {
+                clearInterval(autoInterval);
+                document.getElementById("autoBtn").innerText = "🤖 AUTO TAP";
+                document.getElementById("autoBtn").style.background = "#FF8800";
+                setStatus("⏸️ Auto Tap BERHENTI", "info");
+            }
+        }
+
+        async function buyUpgrade() {
+            if (balance < 800) {
+                setStatus("❌ Koin kurang! Butuh 800 GRD, punya " + balance.toFixed(2) + " GRD", "error");
+                return;
+            }
+
+            balance -= 800;
+            speed++;
+
+            saveLocalData();
+            updateUI();
+
+            setStatus(
+                "✅ Upgrade berhasil! Per Tap sekarang: +" + speed + " GRD",
+                "success"
+            );
+        }
+
+        async function kirimToken() {
+            const alamat = document.getElementById("alamatTujuan").value.trim();
+            let jumlah = parseFloat(document.getElementById("jumlahKirim").value) || balance;
+
+            // Validation
+            if (!alamat) {
+                showKirimStatus("❌ Masukkan alamat tujuan", "error");
+                return;
+            }
+
+            if (!web3.utils.isAddress(alamat)) {
+                showKirimStatus("❌ Format alamat tidak valid! (harus 0x...)", "error");
+                return;
+            }
+
+            if (jumlah <= 0) {
+                showKirimStatus("❌ Jumlah harus lebih dari 0", "error");
+                return;
+            }
+
+            if (jumlah > balance) {
+                showKirimStatus(
+                    "❌ Saldo tidak cukup! Punya: " + balance.toFixed(2) + " GRD",
+                    "error"
+                );
+                return;
+            }
+
+            if (alamat.toLowerCase() === myAddress.toLowerCase()) {
+                showKirimStatus("❌ Tidak bisa mengirim ke alamat sendiri", "error");
+                return;
+            }
+
+            try {
+                showKirimStatus("⏳ Menunggu konfirmasi Metamask...", "info");
+                document.getElementById("kirimBtn").disabled = true;
+
+                const amountInWei = web3.utils.toWei(jumlah.toString(), "ether");
+
+                const receipt = await contract.methods
+                    .transfer(alamat, amountInWei)
+                    .send({ from: myAddress });
+
+                balance -= jumlah;
+                saveLocalData();
+                updateUI();
+
+                const txHash = receipt.transactionHash;
+                const txLink = `https://inchain.ai/tx/${txHash}`;
+
+                showKirimStatus(
+                    `✅ BERHASIL! ${jumlah.toFixed(2)} GRD dikirim.\n\n` +
+                    `TX: <a href="${txLink}" class="tx-link" target="_blank">${txHash}</a>`,
+                    "success"
+                );
+
+                document.getElementById("alamatTujuan").value = "";
+                document.getElementById("jumlahKirim").value = "";
+
+                // Reload balance after a delay
+                setTimeout(() => loadBlockchainBalance(), 3000);
+            } catch (err) {
+                console.error(err);
+                let errorMsg = err.message;
+
+                if (err.message.includes("user rejected")) {
+                    errorMsg = "❌ Transaksi ditolak oleh user";
+                } else if (err.message.includes("insufficient")) {
+                    errorMsg = "❌ Gas fee tidak cukup";
+                } else {
+                    errorMsg = "❌ GAGAL: " + errorMsg;
+                }
+
+                showKirimStatus(errorMsg, "error");
+            } finally {
+                document.getElementById("kirimBtn").disabled = false;
+            }
+        }
+
+        function showKirimStatus(message, type) {
+            const el = document.getElementById("kirimStatus");
+            el.innerHTML = message;
+            el.className = "message " + type;
+        }
+
+        function setStatus(message, type) {
+            const el = document.getElementById("status");
+            el.innerText = message;
+            el.className = "status-" + type;
+        }
+
+        // Periodic balance refresh (setiap 30 detik)
+        setInterval(() => {
+            if (walletConnected) {
+                loadBlockchainBalance();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
